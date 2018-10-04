@@ -1,1 +1,6 @@
-gato Atirei o pau no gato oi tchau 
+SUB SUB 
+MULT ADD SUB
+COPY
+SUB            ADD
+ADD
+COPY
