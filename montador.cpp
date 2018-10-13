@@ -6,7 +6,49 @@
 
 using namespace std;
 
-void pre_processamento(ifstream &arq_fonte ,ofstream &arq_pre_processado){
+void cria_map_instrucoes(std::map <string, pair< pair<int, int>, pair<int, int> > > &i_map){
+
+  i_map.insert(make_pair("ADD", make_pair(make_pair(1, 2), make_pair(1, 0))));
+  i_map.insert(make_pair("SUB", make_pair(make_pair(2, 2), make_pair(1, 0))));
+  i_map.insert(make_pair("MULT", make_pair(make_pair(3, 2), make_pair(1, 0))));
+  i_map.insert(make_pair("DIV", make_pair(make_pair(4, 2), make_pair(1, 0))));
+  i_map.insert(make_pair("JMP", make_pair(make_pair(5, 2), make_pair(1, 0))));
+  i_map.insert(make_pair("JMPN", make_pair(make_pair(6, 2), make_pair(1, 0))));
+  i_map.insert(make_pair("JMPP", make_pair(make_pair(7, 2), make_pair(1, 0))));
+  i_map.insert(make_pair("JMPZ", make_pair(make_pair(8, 2), make_pair(1, 0))));
+  i_map.insert(make_pair("COPY", make_pair(make_pair(9, 3), make_pair(2, 0))));
+  i_map.insert(make_pair("LOAD", make_pair(make_pair(10, 2), make_pair(1, 0))));
+  i_map.insert(make_pair("STORE", make_pair(make_pair(11, 2), make_pair(1, 0))));
+  i_map.insert(make_pair("INPUT", make_pair(make_pair(12, 2), make_pair(1, 0))));
+  i_map.insert(make_pair("OUTPUT", make_pair(make_pair(13, 2), make_pair(1, 0))));
+  i_map.insert(make_pair("STOP", make_pair(make_pair(14, 1), make_pair(0, 0))));
+}
+
+void cria_map_diretivas(std::map<string, pair<int, int> > &d_map){
+
+  d_map.insert(make_pair("SECTION", make_pair(0, 1)));
+  d_map.insert(make_pair("SPACE", make_pair(1, 1)));
+  d_map.insert(make_pair("CONST", make_pair(1, 1)));
+  d_map.insert(make_pair("PUBLIC", make_pair(0, 0)));
+  d_map.insert(make_pair("EQU", make_pair(0, 1)));
+  d_map.insert(make_pair("IF", make_pair(0, 1)));
+  d_map.insert(make_pair("EXTERN", make_pair(0, 0)));
+  d_map.insert(make_pair("BEGIN", make_pair(0, 0)));
+  d_map.insert(make_pair("END", make_pair(0, 0)));
+}
+
+void str_upper(string &str){
+
+  int i;
+  int str_length = str.length();
+
+  for(i = 0; i < str_length; i++){
+
+    str[i] = toupper(str[i]);
+  }
+}
+
+void pre_processamento(ifstream &arq_fonte ,fstream &arq_pre_processado){
 
   // Entradas: arq_fonte = Arquivo assembly que vai ser pre processado
   // Saídas: arq_pre_processado = Arquivo assembly já pre processado
@@ -142,34 +184,174 @@ void pre_processamento(ifstream &arq_fonte ,ofstream &arq_pre_processado){
   }
 }
 
-int main () {
+void primeira_passagem(fstream &arq_fonte, std::map <string, pair< pair<int, int>, pair<int, int> > > &i_map, std::map<string, int> &s_map, std::map<string, pair<int, int> > &d_map){
 
   string linha;
-  string palavra;
+  string mnemonico;
+  string simbolo;
   int i;
   int length_linha;
+  int cont_linha = 0, cont_pos = 0;
+  int label_detect;
+
+  //iteradores dos maps
+  std::map <string, pair< pair<int, int>, pair<int, int> > >::iterator i_it;
+  std::map<string, int>::iterator s_it;
+  std::map<string, pair<int, int> >::iterator d_it;
+
+  while(getline(arq_fonte, linha)){
+
+    cout << "Linha lida: " << linha << endl;
+
+    length_linha = linha.length();
+    label_detect = 0;
+    cont_linha++;
+
+    if(length_linha == 0 || linha[0] == ';') continue;
+
+    //varre a linha procurando ':'
+    for(i=0; i<length_linha; i++){
+
+      if(linha[i] == ':'){
+
+        label_detect = i;
+        break;
+      }
+    }
+
+    //se há label, devemos identificá-lo pelo ':'
+    if(label_detect != 0){
+
+      //identificacao do label
+      for(i=0; i < label_detect; i++){
+
+        simbolo += linha[i];
+      }
+
+      //converte para maiusculo
+      str_upper(simbolo);
+
+      //se já existe = erro
+      if(s_map.find(simbolo) != s_map.end()){
+
+        cout << "Linha " << cont_linha << ": ERRO! Repetição do símbolo " << simbolo << endl;
+        exit(0);
+      }
+      //se não, insere e verifica qual o mnemonico que segue
+      else{
+
+        s_map.insert(make_pair(simbolo, cont_pos));
+        cout << "Endereço " << cont_pos << ": detecção do símbolo " << simbolo << endl;
+
+        //se há apenas o rótulo na linha
+        if(label_detect == length_linha -1){
+
+          simbolo.clear();
+          continue;
+        }
+
+        for(i = (label_detect + 2); linha[i] != ' ' && i < length_linha; i++){
+
+            mnemonico += linha[i];
+        }
+
+        //converte para maiúsculo
+        str_upper(mnemonico);
+
+        cout << "Mnemonico verificado: " << mnemonico << endl;
+
+        //verifica se o mnemonico é instrucao
+        i_it = i_map.find(mnemonico);
+
+        //se for, aumenta o contador de posição de acordo com o tamanho da instrução
+        if (i_it != i_map.end()){
+
+          cont_pos += i_it->second.first.second;
+        }
+        //se não for, vericica se é diretiva
+        else{
+
+          d_it = d_map.find(mnemonico);
+          //se for, incrementa o contador de posição de acordo com o tamanho da diretiva
+          if (d_it != d_map.end()){
+
+            cont_pos += d_it->second.first;
+          }
+          //se não for, erro
+          else{
+
+            cout << "Linha " << cont_linha << ": Comando inválido!" << endl;
+            exit(1);
+          }
+        }
+      }
+    }
+
+
+    //se não há label, devemos identificar a primeira instrução pelo ' '
+    else{
+
+      for(i = 0; linha[i] != ' ' && i < length_linha; i++){
+
+          mnemonico += linha[i];
+      }
+
+      //converte para maiúsculo
+      str_upper(mnemonico);
+
+      cout << "Mnemonico verificado: " << mnemonico << endl;
+
+      //verifica se o mnemonico é instrucao
+      i_it = i_map.find(mnemonico);
+
+      //se for, aumenta o contador de posição de acordo com o tamanho da instrução
+      if (i_it != i_map.end()){
+
+        cont_pos += i_it->second.first.second;
+      }
+      //se não for, vericica se é diretiva
+      else{
+
+        d_it = d_map.find(mnemonico);
+        //se for, incrementa o contador de posição de acordo com o tamanho da diretiva
+        if (d_it != d_map.end()){
+
+          cont_pos += d_it->second.first;
+        }
+        //se não for, erro
+        else{
+
+          cout << "Linha " << cont_linha << ": Comando inválido!" << endl;
+          exit(2);
+        }
+      }
+    }
+
+    simbolo.clear();
+    mnemonico.clear();
+  }
+}
+
+int main () {
+
   ifstream arq_fonte;
-  ofstream arq_pre_processado;
-  map<string, pair<int,int> > i_map; //mapa de instruções
+  fstream arq_pre_processado;
+  //mapa de instruções: <Instrução, < <Opcode, Tamanho>, <Operandos, 0> > >
+  std::map <string, pair< pair<int, int>, pair<int, int> > > i_map;
+  //mapa de símbolos: <Símbolo, Endereço>
+  std::map<string, int> s_map;
+  //mapa de diretivas: <Diretiva, <Tamanho, Operandos> >
+  std::map<string, pair<int, int> > d_map;
+  //iteradores
+  std::map <string, pair< pair<int, int>, pair<int, int> > >::iterator i_it;
+  std::map<string, int>::iterator s_it;
+  std::map<string, pair<int, int> >::iterator d_it;
 
-
-  i_map.insert(make_pair("ADD", make_pair(1, 3)));
-  i_map.insert(make_pair("SUB", make_pair(2, 3)));
-  i_map.insert(make_pair("MULT", make_pair(3, 3)));
-  i_map.insert(make_pair("DIV", make_pair(4, 3)));
-  i_map.insert(make_pair("JMP", make_pair(5, 3)));
-  i_map.insert(make_pair("JMPN", make_pair(6, 3)));
-  i_map.insert(make_pair("JMPP", make_pair(7, 3)));
-  i_map.insert(make_pair("JMPZ", make_pair(8, 3)));
-  i_map.insert(make_pair("COPY", make_pair(9, 3)));
-  i_map.insert(make_pair("LOAD", make_pair(10, 3)));
-  i_map.insert(make_pair("STORE", make_pair(11, 3)));
-  i_map.insert(make_pair("INPUT", make_pair(12, 3)));
-  i_map.insert(make_pair("OUTPUT", make_pair(13, 3)));
-  i_map.insert(make_pair("STOP", make_pair(14, 3)));
+  cria_map_instrucoes(i_map);
+  cria_map_diretivas(d_map);
 
   arq_fonte.open("programa.asm");
-  arq_pre_processado.open("programa.pre",ofstream::out);
+  arq_pre_processado.open("programa.pre",ios::out);
 
   if(!arq_fonte.is_open() || !arq_pre_processado.is_open()){
 
@@ -180,54 +362,28 @@ int main () {
   // Passagem de pre processamento
   pre_processamento(arq_fonte, arq_pre_processado);
 
-  while(getline(arq_fonte, linha)){
+  arq_fonte.close();
+  arq_pre_processado.close();
 
-    length_linha = linha.length();
+  arq_pre_processado.open("programa.pre",ios::in);
 
-    //varre a linha, separando cada palavra
-    for(i=0; i<length_linha; i++){
+  if(!arq_pre_processado.is_open()){
 
-      palavra += linha[i];
-
-      //fim de palavra
-      if(linha[i] == ' '){
-
-        if(palavra.length() > 1){
-
-          //remove espaço
-          palavra.erase(palavra.end()-1);
-
-          if (i_map.find(palavra) != i_map.end()){
-
-            //cout << palavra << ' ' << i_map.find(palavra)->second.first << endl;
-          }
-          else{
-
-            //cout << palavra << ' ' << "não existente!" << endl;
-          }
-        }
-
-        palavra.clear();
-      }
-
-      //fim de linha (e de uma palavra)
-      else if(i == (length_linha - 1)){
-
-        if (i_map.find(palavra) != i_map.end()){
-
-          //cout << palavra << ' ' << i_map.find(palavra)->second.first << endl;
-        }
-        else{
-
-          //cout << palavra << ' ' << "não existente!" << endl;
-        }
-
-        palavra.clear();
-      }
-    }
+    cout << "Impossível abrir arquivo solicitado!";
+    return -1;
   }
 
-  arq_fonte.close();
+  primeira_passagem(arq_pre_processado, i_map, s_map, d_map);
+
+  arq_pre_processado.close();
+
+
+  //TESTE DO CONTEÚDO DE S_MAP
+  cout << endl << "Conteúdo do s_map:" << endl;
+  for (map<string,int>::iterator it = s_map.begin(); it != s_map.end(); it++){
+
+    cout << it->first << ' ' << it->second <<  endl;
+  }
 
   return 0;
 }
