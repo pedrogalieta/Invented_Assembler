@@ -332,8 +332,9 @@ void primeira_passagem(fstream &arq_fonte, std::map <string, pair< pair<int, int
   }
 }
 
-int main () {
+int main(int argc, char const *argv[]) {
 
+  string concatenador;
   ifstream arq_fonte;
   fstream arq_pre_processado;
   //mapa de instruções: <Instrução, < <Opcode, Tamanho>, <Operandos, 0> > >
@@ -350,8 +351,14 @@ int main () {
   cria_map_instrucoes(i_map);
   cria_map_diretivas(d_map);
 
-  arq_fonte.open("programa.asm");
-  arq_pre_processado.open("programa.pre",ios::out);
+  concatenador += argv[1];
+  concatenador += ".asm";
+  arq_fonte.open(&concatenador[0]);
+  concatenador.clear();
+
+  concatenador += argv[1];
+  concatenador += ".pre";
+  arq_pre_processado.open(&concatenador[0],ios::out);
 
   if(!arq_fonte.is_open() || !arq_pre_processado.is_open()){
 
@@ -365,7 +372,7 @@ int main () {
   arq_fonte.close();
   arq_pre_processado.close();
 
-  arq_pre_processado.open("programa.pre",ios::in);
+  arq_pre_processado.open(&concatenador[0],ios::in);
 
   if(!arq_pre_processado.is_open()){
 
