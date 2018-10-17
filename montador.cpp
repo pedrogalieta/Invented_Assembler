@@ -68,12 +68,14 @@ void pre_processamento(ifstream &arq_fonte ,fstream &arq_pre_processado){
 
     // Esse if faz com que caso a linha comece por comentário não fique um \n no arquivo pre processado
     if(linha[0] == ';'){
+      arq_pre_processado << endl;
       continue;
     }
 
     // Esse if faz com que o pre processador ignore a próxima linha caso tenha um IF 0 antes dela
     if(pular_proxima_linha == 1){
       pular_proxima_linha = 0;
+      arq_pre_processado << endl;
       continue;
     }
 
@@ -154,6 +156,7 @@ void pre_processamento(ifstream &arq_fonte ,fstream &arq_pre_processado){
         valor_EQU.clear();
         rotulo.clear();
         nova_linha.clear();
+        arq_pre_processado << endl;
         continue;
       }
     }
@@ -168,6 +171,7 @@ void pre_processamento(ifstream &arq_fonte ,fstream &arq_pre_processado){
         pular_proxima_linha = 1;
       }
       // Depois de tratar o IF essa linha pode ser descartada
+      arq_pre_processado << endl;
       valor_EQU.clear();
       rotulo.clear();
       nova_linha.clear();
