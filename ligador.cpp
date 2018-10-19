@@ -1,10 +1,33 @@
+#include <sstream>
 #include <iostream>
 #include <string>
 #include <fstream>
+#include <vector>
 #include <map>
 #include <stdlib.h>
 
 using namespace std;
+
+void add_vector_relativo(string linha,vector <int> &tamanho,vector <pair<int,int> > &relativos, int indice_modulo){
+
+  int i, j = 0, valor_int;
+  string valor_str;
+  linha += ' ';
+  for(i = 0; i<linha.length(); i++){
+    if(linha[i] != ' '){
+      valor_str += linha[i];
+    }else{
+      j = 0;
+      valor_int = atoi(valor_str.c_str());
+      while(j<indice_modulo){
+        valor_int += tamanho[j];
+        j++;
+      }
+      relativos.push_back(pair<int,int> (valor_int,indice_modulo));
+      valor_str.clear();
+    }
+  }
+}
 
 int verifica_tamanho(string linha){
 
@@ -21,76 +44,218 @@ int verifica_tamanho(string linha){
       }
     }
   }
-  cout<<tamanho_efetivo<<endl;
   return tamanho_efetivo;
 }
 
-int alinha_modulos(fstream &arq_exe ,ifstream &modulo_atual){
+void add_tab_uso(map <int,string>  &uso, string linha, int indice_modulo, vector<int> tamanho){
 
+  int i, fator_corrigido;
+  string nome;
+  string valor_str;
+
+  for(i=0;i<linha.length();i++){
+    if(linha[i] != ' '){
+      nome += linha[i];
+    }else {
+      i++;
+      break;
+    }
+  }
+  for(i;i<linha.length();i++){
+      valor_str += linha[i];
+  }
+
+  i = 0;
+  while(i<indice_modulo){
+    fator_corrigido += tamanho[i];
+    i++;
+  }
+
+  fator_corrigido += atoi(valor_str.c_str());
+  uso.insert(make_pair(fator_corrigido, nome));
+
+}
+
+void add_tab_uso_geral(map <string,int>  &uso_geral, string linha, int indice_modulo, vector<int> tamanho){
+
+  int i, fator_corrigido;
+  string nome;
+  string valor_str;
+
+  for(i=0;i<linha.length();i++){
+    if(linha[i] != ' '){
+      nome += linha[i];
+    }else {
+      i++;
+      break;
+    }
+  }
+  for(i;i<linha.length();i++){
+      valor_str += linha[i];
+  }
+
+  i = 0;
+  while(i<indice_modulo){
+    fator_corrigido += tamanho[i];
+    i++;
+  }
+
+  fator_corrigido += atoi(valor_str.c_str());
+
+  uso_geral.insert(make_pair(nome, fator_corrigido));
+}
+
+void add_vector_codigo(string linha,vector<int> &codigo){
+
+  int i;
+  string valor_str;
+
+  for(i=0;i<linha.length();i++){
+    if(linha[i] != ' '){
+      valor_str += linha[i];
+    }else{
+      codigo.push_back(atoi(valor_str.c_str()));
+      valor_str.clear();
+    }
+  }
+}
+
+void trata_modulos(ifstream &modulo_atual, vector<int> &tamanho, map <string,int>  &uso_geral, map <int,string> &uso, int indice_modulo, vector<pair<int,int> > &relativos, vector<int> &codigo){
+
+  int i;
   string linha;
 
+  // Itera sobre o módulo todo linha por linha
   while(getline(modulo_atual,linha)){
 
+    // Cria a tabela de uso para cada módulo
+    if(linha == "TABLE USE"){
+      while(linha != "TABLE DEFINITION"){
+        linha.clear();
+        getline(modulo_atual,linha);
+        if(linha != "TABLE DEFINITION"){
+          add_tab_uso(uso, linha, indice_modulo, tamanho);
+        }
+      }
+    }
+
+    // Cria a tabela de uso geral
+    if(linha == "TABLE DEFINITION"){
+      while(linha != "RELATIVE"){
+        linha.clear();
+        getline(modulo_atual,linha);
+        if(linha != "RELATIVE"){
+            add_tab_uso_geral(uso_geral, linha, indice_modulo, tamanho);
+        }
+      }
+    }
+
+    // Indica quais endereços são relatrivos
+    if(linha == "RELATIVE"){
+      linha.clear();
+      getline(modulo_atual,linha);
+      add_vector_relativo(linha,tamanho,relativos, indice_modulo);
+    }
+
+    // Concatena os códigos objeto de cada módulo no arquivo de saída e calcula o tamanho de memória do módulo
     if(linha == "CODE"){
       linha.clear();
       getline(modulo_atual,linha);
       linha += ' ';
-      arq_exe << linha;
-      return verifica_tamanho(linha);
+      add_vector_codigo(linha,codigo);
+      tamanho.push_back(verifica_tamanho(linha));
     }
     linha.clear();
-
   }
-  // Arquivo obj não tem código
-  return -1;
-
-
-
 }
 
 int main(int argc, char const *argv[]) {
 
-  int i = 0, contador_modulos = 0;
-  int tamanho_0, tamanho_1, tamanho_2, tamanho_3;
+  stringstream ss;
+  int somador;
+  int flag_relativo;
+  string referencia;
+  vector<string> modulos;
+  vector<int> tamanho;
+  vector<pair<int, int> > relativos;
+  vector<int> codigo;
+  map <string,int> uso_geral;
+  map <int,string> uso;
 
-  ifstream mod_0,mod_1,mod_2,mod_3;
+  ifstream mod;
   fstream arq_exe;
-  string modulo_0, modulo_1, modulo_2, modulo_3;
-  string aux;
+  string modulo;
 
-  modulo_0 += argv[1];
-  aux += modulo_0;
-  aux += ".e";
-  modulo_0 += ".obj";
-  modulo_1 += argv[2];
-  modulo_1 += +".obj";
-  contador_modulos = 2;
-  // while(i<=argc){
-  //   if(i == 1){
-  //     modulo_0 += argv[i];
-  //     contador_modulos++;
-  //   }else if(i == 2){
-  //     modulo_1 += argv[i];
-  //     contador_modulos++;
-  //   }else if(i == 3){
-  //     modulo_2 += argv[i];
-  //     contador_modulos++;
-  //   }else if(i == 4){
-  //     modulo_3 += argv[i];
-  //         contador_modulos++;
-  //   }
-  //   i++;
-  // }
+  int j;
+  int i = 1; // Ignora "./ligador"
+  while(i<argc){
+    modulos.push_back(argv[i]);
+    i++;
+  }
 
-  mod_0.open(&modulo_0[0]);
-  mod_1.open(&modulo_1[0]);
-  arq_exe.open(&aux[0],ios::out);
+  i = 0;
+  // Chama a função de tratameto para cada módulo lido do terminal
+  while(i<modulos.size()){
 
-  tamanho_0 = alinha_modulos(arq_exe,mod_0);
-  tamanho_1 = alinha_modulos(arq_exe,mod_1);
+    // Cria o arquivo de saída ".e" com o mesmo nome do primeiro módulo
+    if(i == 0){
+      modulo += modulos[i];
+      modulo += ".e";
+      arq_exe.open(&modulo[0],ios::out);
+    }
 
-  mod_0.close();
-  mod_1.close();
+    modulo.clear();
+    // Trata cada módulo separadamente, gerando todas tabelas e vectors de interesse
+    modulo += modulos[i];
+    modulo += ".obj";
+    mod.open(&modulo[0]);
+    // Se o código só tem um módulo, o código não precisa ser ligado
+    if(modulos.size() == 1){
+      modulo.clear();
+      getline(mod, modulo);
+      arq_exe << modulo;
+    }
+    trata_modulos(mod,tamanho,uso_geral, uso, i, relativos, codigo);
+    mod.close();
+    i++;
+  }
+
+  i = 0;
+  //Corrige os endereços
+  while(i<codigo.size()){
+    somador = codigo[i];
+    j = 0;
+    flag_relativo = 0;
+
+    while(j<relativos.size()){
+      if(relativos[j].first == i){
+        flag_relativo = 1;
+        j++;
+        break;
+      }
+      j++;
+    }
+
+    if(flag_relativo == 1){
+      if(uso.find(i) != uso.end()){
+        somador += uso_geral.find(uso.find(i)->second)->second;
+      }else {
+        int k = 0;
+        while(k<relativos[j].second){
+          somador += tamanho[k];
+          k++;
+        }
+      }
+    }
+    ss << somador;
+    referencia = ss.str();
+    referencia += ' ';
+    arq_exe << referencia;
+    referencia.clear();
+    ss.str("");
+    i++;
+  }
+
   arq_exe.close();
-
+  return 0;
 }
