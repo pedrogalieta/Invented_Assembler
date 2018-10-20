@@ -104,13 +104,13 @@ void add_tab_uso(string linha ,map <int,string>  &uso, int indice_modulo, vector
 
 }
 
-void add_tab_uso_geral(string linha, map <string,int>  &uso_geral, int indice_modulo, vector<int> tamanho){
+void add_tab_def_geral(string linha, map <string,int>  &def_geral, int indice_modulo, vector<int> tamanho){
 
   // Entradas: linha = é a string q contém cada linha da seção "TABLE DEFINITION"
   //           uso = é o map que indexa os labels que foram utilizados com referência cruzada e sua posição já corrigida
   //           indice_modulo = é um inteiro que indica qual o número do atual módulo sendo processado
   //           tamanho = é o vector que guarda o tamanho em inteiro dos módulos
-  // Saídas: Não há saídas já que uso_geral é passado por referência
+  // Saídas: Não há saídas já que def_geral é passado por referência
   // Comentários: Essa função cria um map com todos os labels utilizados com referência cruzada e o valor da memória
   //              já corrigido
 
@@ -138,7 +138,7 @@ void add_tab_uso_geral(string linha, map <string,int>  &uso_geral, int indice_mo
 
   fator_corrigido += atoi(valor_str.c_str());
 
-  uso_geral.insert(make_pair(nome, fator_corrigido));
+  def_geral.insert(make_pair(nome, fator_corrigido));
 }
 
 void add_vector_codigo(string linha,vector<int> &codigo){
@@ -161,11 +161,11 @@ void add_vector_codigo(string linha,vector<int> &codigo){
   }
 }
 
-void trata_modulos(ifstream &modulo_atual, vector<int> &tamanho, map <string,int>  &uso_geral, map <int,string> &uso, int indice_modulo, vector<pair<int,int> > &relativos, vector<int> &codigo){
+void trata_modulos(ifstream &modulo_atual, vector<int> &tamanho, map <string,int>  &def_geral, map <int,string> &uso, int indice_modulo, vector<pair<int,int> > &relativos, vector<int> &codigo){
 
   // Entradas: modulo_atual = é o arquivo do módulo sendo processado
   //           tamanho = é um vector que guarda dinamicamente o tamanho do código efetivo do módulo
-  //           uso_geral = é um map que indexa todas referências cruzadas e suas posições corrigidas
+  //           def_geral = é um map que indexa todas referências cruzadas e suas posições corrigidas
   //           uso = é um map que indexa a posição no código que uma referência cruzada tal foi usada
   //           indice_modulo = é um inteiro que nos diz qual a posição desse módulo entre os outros
   //           relativos = é um vector que guarda quais posições do código são relativas e qual seu respectivo módulo
@@ -199,7 +199,7 @@ void trata_modulos(ifstream &modulo_atual, vector<int> &tamanho, map <string,int
         linha.clear();
         getline(modulo_atual,linha);
         if(linha != "RELATIVE"){
-            add_tab_uso_geral(linha, uso_geral, indice_modulo, tamanho);
+            add_tab_def_geral(linha, def_geral, indice_modulo, tamanho);
         }
       }
     }
@@ -233,7 +233,7 @@ int main(int argc, char const *argv[]) {
   vector<int> tamanho;
   vector<pair<int, int> > relativos;
   vector<int> codigo;
-  map <string,int> uso_geral;
+  map <string,int> def_geral;
   map <int,string> uso;
 
   ifstream mod;
@@ -273,7 +273,7 @@ int main(int argc, char const *argv[]) {
     }
 
     // Preenche todas as estruturas necessárias para a ligação
-    trata_modulos(mod,tamanho,uso_geral, uso, i, relativos, codigo);
+    trata_modulos(mod,tamanho,def_geral, uso, i, relativos, codigo);
 
     // Fecha o módulo que acabamos de processar
     mod.close();
@@ -302,7 +302,7 @@ int main(int argc, char const *argv[]) {
     if(flag_relativo == 1){
       // Se for relativo, checa se ele está na tabela de uso de algum módulo
       if(uso.find(i) != uso.end()){
-        somador += uso_geral.find(uso.find(i)->second)->second;
+        somador += def_geral.find(uso.find(i)->second)->second;
       }else {
         // Se não, apenas conserta a o enderço relativo ao primeiro módulo
         int k = 0;
