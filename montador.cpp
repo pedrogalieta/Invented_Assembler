@@ -48,19 +48,21 @@ void str_upper(string &str){
   }
 }
 
-void pre_processamento(ifstream &arq_fonte ,fstream &arq_pre_processado){
+int pre_processamento(ifstream &arq_fonte ,fstream &arq_pre_processado){
 
-  // Entradas: arq_fonte = Arquivo assembly que vai ser pre processado
-  // Saídas: arq_pre_processado = Arquivo assembly já pre processado
+  // Entradas:  arq_fonte = Arquivo assembly que vai ser pre processado
+  // Saídas:    arq_pre_processado = Arquivo assembly já pre processado
+  //            A função retorna um caso o pre processamento tenho sido sucesso e 0 caso não
   // Comentários: Essa função retira comentários do código fonte e trata as diretivas EQU e IF
 
-  int i, length_linha, posicao, acumulador_erro, flag_rotulo, length_palavra, flag_IF, pular_proxima_linha = 0;
+  int i, length_linha, posicao, acumulador_erro, flag_rotulo, length_palavra, flag_IF, pular_proxima_linha = 0, contador_de_linha = 0;
   string linha, nova_linha, palavra, rotulo, valor_EQU;
   map<string, string> EQU_map; //mapa de EQU's definidos
 
   // Varre o arquivo fonte
   while(getline(arq_fonte,linha)){
 
+    contador_de_linha++;
     acumulador_erro = 0;
     flag_IF = 0;
     flag_rotulo = 0; // Serve para saber se a linha lida tinha algum rótulo definido
@@ -146,18 +148,30 @@ void pre_processamento(ifstream &arq_fonte ,fstream &arq_pre_processado){
     // Checa se o rótulo era para um EQU ou outra coisa
     if(flag_rotulo == 1){
       // Verificar se existe um jeito melhor para isso \/
-      if(nova_linha[posicao+2] == 'E' && nova_linha[posicao+3] == 'Q' && nova_linha[posicao+4] == 'U' && nova_linha[posicao+5] == ' ' ){
-        // Se for EQU adiciona no map de EQU's
-        for(i=posicao+6;i<length_linha;i++){
-          valor_EQU+=nova_linha[i];
+      if(nova_linha[posicao+2] == 'E' && nova_linha[posicao+3] == 'Q' && nova_linha[posicao+4] == 'U'){
+        // Checa se o EQU foi declarado sem argumento
+        if(nova_linha[posicao+5] == ' ' ){
+          for(i=posicao+6;i<length_linha;i++){
+            valor_EQU+=nova_linha[i];
+          }
+        }else{
+          cout<< "Linha "<< contador_de_linha << ": Erro! EQU definido sem argumento" << endl;
+          return 0;
         }
-        // Depois de tratar o EQU essa linha pode ser descartada
-        EQU_map.insert(make_pair(rotulo,valor_EQU));
-        valor_EQU.clear();
-        rotulo.clear();
-        nova_linha.clear();
-        arq_pre_processado << endl;
-        continue;
+        // Checa se o EQU já foi declarado anteriormente
+        if(EQU_map.find(rotulo) == EQU_map.end()){
+          // Se não, adicionar no map e continuar o pre processamento
+          EQU_map.insert(make_pair(rotulo,valor_EQU));
+          valor_EQU.clear();
+          rotulo.clear();
+          nova_linha.clear();
+          arq_pre_processado << endl;
+          continue;
+        } else {
+          // Se sim, erro
+          cout<< "Linha "<< contador_de_linha << ": Erro! EQU redefinido" << endl;
+          return 0;
+        }
       }
     }
 
@@ -186,6 +200,7 @@ void pre_processamento(ifstream &arq_fonte ,fstream &arq_pre_processado){
     rotulo.clear();
     nova_linha.clear();
   }
+  return 1;
 }
 
 void primeira_passagem(fstream &arq_fonte, std::map <string, pair< pair<int, int>, pair<int, int> > > &i_map, std::map<string, int> &s_map, std::map<string, pair<int, int> > &d_map){
@@ -205,7 +220,7 @@ void primeira_passagem(fstream &arq_fonte, std::map <string, pair< pair<int, int
 
   while(getline(arq_fonte, linha)){
 
-    cout << "Linha lida: " << linha << endl;
+    //cout << "Linha lida: " << linha << endl;
 
     length_linha = linha.length();
     label_detect = 0;
@@ -238,14 +253,14 @@ void primeira_passagem(fstream &arq_fonte, std::map <string, pair< pair<int, int
       //se já existe = erro
       if(s_map.find(simbolo) != s_map.end()){
 
-        cout << "Linha " << cont_linha << ": ERRO! Repetição do símbolo " << simbolo << endl;
+        //cout << "Linha " << cont_linha << ": ERRO! Repetição do símbolo " << simbolo << endl;
         exit(0);
       }
       //se não, insere e verifica qual o mnemonico que segue
       else{
 
         s_map.insert(make_pair(simbolo, cont_pos));
-        cout << "Endereço " << cont_pos << ": detecção do símbolo " << simbolo << endl;
+        //cout << "Endereço " << cont_pos << ": detecção do símbolo " << simbolo << endl;
 
         //se há apenas o rótulo na linha
         if(label_detect == length_linha -1){
@@ -262,7 +277,7 @@ void primeira_passagem(fstream &arq_fonte, std::map <string, pair< pair<int, int
         //converte para maiúsculo
         str_upper(mnemonico);
 
-        cout << "Mnemonico verificado: " << mnemonico << endl;
+        //cout << "Mnemonico verificado: " << mnemonico << endl;
 
         //verifica se o mnemonico é instrucao
         i_it = i_map.find(mnemonico);
@@ -284,7 +299,7 @@ void primeira_passagem(fstream &arq_fonte, std::map <string, pair< pair<int, int
           //se não for, erro
           else{
 
-            cout << "Linha " << cont_linha << ": Comando inválido!" << endl;
+            //cout << "Linha " << cont_linha << ": Comando inválido!" << endl;
             exit(1);
           }
         }
@@ -303,7 +318,7 @@ void primeira_passagem(fstream &arq_fonte, std::map <string, pair< pair<int, int
       //converte para maiúsculo
       str_upper(mnemonico);
 
-      cout << "Mnemonico verificado: " << mnemonico << endl;
+      //cout << "Mnemonico verificado: " << mnemonico << endl;
 
       //verifica se o mnemonico é instrucao
       i_it = i_map.find(mnemonico);
@@ -325,7 +340,7 @@ void primeira_passagem(fstream &arq_fonte, std::map <string, pair< pair<int, int
         //se não for, erro
         else{
 
-          cout << "Linha " << cont_linha << ": Comando inválido!" << endl;
+          //cout << "Linha " << cont_linha << ": Comando inválido!" << endl;
           exit(2);
         }
       }
@@ -371,7 +386,9 @@ int main(int argc, char const *argv[]) {
   }
 
   // Passagem de pre processamento
-  pre_processamento(arq_fonte, arq_pre_processado);
+  if(pre_processamento(arq_fonte, arq_pre_processado) == 0){
+    return -1;
+  };
 
   arq_fonte.close();
   arq_pre_processado.close();
