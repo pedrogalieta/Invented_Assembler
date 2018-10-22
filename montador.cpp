@@ -426,7 +426,7 @@ int primeira_passagem(fstream &arq_fonte, std::map <string, pair< pair<int, int>
                 //se não for inteiro, erro
                 if (check_int(operando) == 0){
 
-                  cout << "Linha " << cont_linha << ": Erro sintático! O operando de SPACE deve ser um valor inteiro positivo!"<< endl;
+                  cout << "Linha " << cont_linha << ": Erro léxico! O operando de SPACE deve ser um valor inteiro positivo!"<< endl;
                   flag_erro = 1;
                 }
                 //se for inteiro, verificar se é > 0
@@ -436,7 +436,7 @@ int primeira_passagem(fstream &arq_fonte, std::map <string, pair< pair<int, int>
 
                   if(aux <= 0){
 
-                    cout << "Linha " << cont_linha << ": Erro sintático! O operando de SPACE deve ser um valor inteiro positivo!"<< endl;
+                    cout << "Linha " << cont_linha << ": Erro léxico! O operando de SPACE deve ser um valor inteiro positivo!"<< endl;
                     flag_erro = 1;
                   }
                   //se for > 0, reservar o espaço solicitado
@@ -470,7 +470,7 @@ int primeira_passagem(fstream &arq_fonte, std::map <string, pair< pair<int, int>
                 //se não for inteiro, erro
                 if (check_int(operando) == 0){
 
-                  cout << "Linha " << cont_linha << ": Erro sintático! O operando de CONST deve ser um valor inteiro!"<< endl;
+                  cout << "Linha " << cont_linha << ": Erro léxico! O operando de CONST deve ser um valor inteiro!"<< endl;
                   flag_erro = 1;
                 }
               }
@@ -587,7 +587,7 @@ int primeira_passagem(fstream &arq_fonte, std::map <string, pair< pair<int, int>
             //se o operando for diferente dos 3 acima, erro
             else{
 
-              cout << "Linha " << cont_linha << ": Erro sintático! SECTION inválida!" << endl;
+              cout << "Linha " << cont_linha << ": Erro léxico! SECTION inválida!" << endl;
               flag_erro = 1;
             }
 
