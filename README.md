@@ -1,4 +1,4 @@
-# Tradutor_Assembly_Hipotetico
+# Tradutor Assembly Hipotetico
 Programadores:  
 
 				Pedro Saman D N Cesarino   15/0144890
