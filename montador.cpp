@@ -184,12 +184,7 @@ int pre_processamento(ifstream &arq_fonte ,fstream &arq_pre_processado){
       }
 
       if(linha[i] ==  '\t'){
-        nova_linha.erase(nova_linha.end()-1);
-        palavra.erase(palavra.end()-1);
-        if(i != 0){
-          nova_linha += ' ';
-          palavra += ' ';
-        }
+        linha[i] = ' ';
       }
 
       // Pega os rótulos presentes no código
