@@ -29,7 +29,6 @@ void add_vector_relativo(string linha,vector <int> &tamanho,vector <pair<int,int
 
   int i, j = 0, valor_int;
   string valor_str;
-  linha += ' ';
   for(i = 0; i<linha.length(); i++){
     if(linha[i] != ' '){
       valor_str += linha[i];
@@ -203,7 +202,7 @@ void trata_modulos(ifstream &modulo_atual, vector<int> &tamanho, map <string,int
       }
     }
 
-    // Indica quais endereços são relatrivos
+    // Indica quais endereços são relativos
     if(linha == "RELATIVE"){
       linha.clear();
       getline(modulo_atual,linha);
@@ -214,7 +213,6 @@ void trata_modulos(ifstream &modulo_atual, vector<int> &tamanho, map <string,int
     if(linha == "CODE"){
       linha.clear();
       getline(modulo_atual,linha);
-      linha += ' ';
       add_vector_codigo(linha,codigo);
       tamanho.push_back(verifica_tamanho(linha));
     }
@@ -292,7 +290,6 @@ int main(int argc, char const *argv[]) {
     while(j<relativos.size()){
       if(relativos[j].first == i){
         flag_relativo = 1;
-        j++;
         break;
       }
       j++;
