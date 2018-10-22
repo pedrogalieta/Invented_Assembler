@@ -181,7 +181,6 @@ void trata_modulos(ifstream &modulo_atual, vector<int> &tamanho, map <string,int
 
   // Itera sobre o módulo todo linha por linha
   while(getline(modulo_atual,linha)){
-
     // Cria a tabela de uso para cada módulo
     if(linha == "TABLE USE"){
       while(linha != "TABLE DEFINITION"){
@@ -199,7 +198,7 @@ void trata_modulos(ifstream &modulo_atual, vector<int> &tamanho, map <string,int
         linha.clear();
         getline(modulo_atual,linha);
         if(linha != "RELATIVE"){
-            add_tab_def_geral(linha, def_geral, indice_modulo, tamanho);
+          add_tab_def_geral(linha, def_geral, indice_modulo, tamanho);
         }
       }
     }
