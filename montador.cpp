@@ -947,6 +947,7 @@ int main(int argc, char const *argv[]) {
     cout << "Impossível abrir arquivo solicitado!";
     return -1;
   }
+  
 
   // Passagem de pre processamento
   if(pre_processamento(arq_fonte, arq_pre_processado) == 0){
