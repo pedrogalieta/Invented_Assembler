@@ -183,6 +183,11 @@ int pre_processamento(ifstream &arq_fonte ,fstream &arq_pre_processado){
            break;
       }
 
+      if(linha[i] ==  '\t'){
+        nova_linha.erase(nova_linha.end()-1);
+        palavra.erase(palavra.end()-1);
+      }
+
       // Pega os rótulos presentes no código
       if(linha[i] == ':'){
         flag_rotulo = 1;
@@ -427,7 +432,7 @@ int primeira_passagem(fstream &arq_fonte, std::map <string, pair< pair<int, int>
                 //se for inteiro, verificar se é > 0
                 else{
 
-                  int aux = stoi(operando);
+                  int aux = atoi(operando.c_str());
 
                   if(aux <= 0){
 
@@ -750,7 +755,7 @@ int segunda_passagem(fstream &arq_fonte, std::map <string, pair< pair<int, int>,
       if (mnemonico == "CONST"){
 
         operando = get_next(linha, &pos_linha, length_linha);
-        cod_list.push_back(stoi(operando));
+        cod_list.push_back(atoi(operando.c_str()));
       }
       else if (mnemonico == "SPACE"){
 
@@ -760,11 +765,11 @@ int segunda_passagem(fstream &arq_fonte, std::map <string, pair< pair<int, int>,
           //pega o operando, cujo tipo já foi verificado
           operando = get_next(linha, &pos_linha, length_linha);
           //insere na lista e atualiza o contador
-          for (int i = 0; i<stoi(operando); i++){
+          for (int i = 0; i<atoi(operando.c_str()); i++){
 
             cod_list.push_back(0);
           }
-          cont_pos += stoi(operando);
+          cont_pos += atoi(operando.c_str());
           continue;
         }
         else {
@@ -947,7 +952,7 @@ int main(int argc, char const *argv[]) {
     cout << "Impossível abrir arquivo solicitado!";
     return -1;
   }
-  
+
 
   // Passagem de pre processamento
   if(pre_processamento(arq_fonte, arq_pre_processado) == 0){
