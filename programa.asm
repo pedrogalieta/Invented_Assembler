@@ -7,7 +7,7 @@ PUBLIC  L1
 INPUT   Y
 LOAD    VAL
 ADD     Y
-STORE   Y + 2
+STORE   Y
 JMPP    MOD_B
 L1:     STOP
 VAL:    CONST   5

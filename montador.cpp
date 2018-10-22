@@ -317,6 +317,7 @@ int primeira_passagem(fstream &arq_fonte, std::map <string, pair< pair<int, int>
     cout << "Linha lida: " << linha << endl;
 
     length_linha = linha.length();
+    cout << "Tamanho: " << length_linha << endl;
     label_detect = 0;
     cont_linha++;
 
@@ -874,6 +875,13 @@ int segunda_passagem(fstream &arq_fonte, std::map <string, pair< pair<int, int>,
         else{
 
           operando = get_next(linha, &pos_linha, length_linha);
+          //se get next retornou valor < length_linha, ainda há o que ser lido, ou seja, operandos
+          if (pos_linha < length_linha){
+
+            cout << "Linha " << cont_linha << ": Erro! A instrução " << mnemonico << " deve receber apenas um operando!" << endl;
+            flag_erro = 1;
+            continue;
+          }
           //verifica se o operando é um símbolo definido
           s_it = s_map.find(operando);
           if (s_it == s_map.end()){
