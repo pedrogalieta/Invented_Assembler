@@ -245,7 +245,7 @@ int pre_processamento(ifstream &arq_fonte ,fstream &arq_pre_processado){
             valor_EQU+=nova_linha[i];
           }
         }else{
-          cout<< "Linha "<< contador_de_linha << ": Erro! EQU definido sem argumento" << endl;
+          cout<< "Linha "<< contador_de_linha << ": Erro sintático! EQU definido sem argumento" << endl;
           return 0;
         }
         // Checa se o EQU já foi declarado anteriormente
@@ -259,7 +259,7 @@ int pre_processamento(ifstream &arq_fonte ,fstream &arq_pre_processado){
           continue;
         } else {
           // Se sim, erro
-          cout<< "Linha "<< contador_de_linha << ": Erro! EQU redefinido" << endl;
+          cout<< "Linha "<< contador_de_linha << ": Erro semântico! EQU redefinido" << endl;
           return 0;
         }
       }
@@ -313,10 +313,10 @@ int primeira_passagem(fstream &arq_fonte, std::map <string, pair< pair<int, int>
 
   while(getline(arq_fonte, linha)){
 
-    cout << "Linha lida: " << linha << endl;
+    //cout << "Linha lida: " << linha << endl;
 
     length_linha = linha.length();
-    cout << "Tamanho: " << length_linha << endl;
+    //cout << "Tamanho: " << length_linha << endl;
     label_detect = 0;
     cont_linha++;
 
@@ -350,14 +350,14 @@ int primeira_passagem(fstream &arq_fonte, std::map <string, pair< pair<int, int>
       //se já existe = erro
       if(s_it != s_map.end()){
 
-        cout << "Linha " << cont_linha << ": ERRO! Repetição do símbolo " << simbolo << endl;
+        cout << "Linha " << cont_linha << ": Erro semântico! Repetição do símbolo " << simbolo << endl;
         flag_erro = 1;
       }
       //se não, insere e verifica qual o mnemonico que segue
       else{
 
         s_map.insert(make_pair(simbolo, make_pair(cont_pos, 0)));
-        cout << "Endereço " << cont_pos << ": detecção do símbolo " << simbolo << endl;
+        //cout << "Endereço " << cont_pos << ": detecção do símbolo " << simbolo << endl;
 
         //se há apenas o rótulo na linha
         if(label_detect == length_linha -1){
@@ -374,7 +374,7 @@ int primeira_passagem(fstream &arq_fonte, std::map <string, pair< pair<int, int>
         //converte para maiúsculo
         str_upper(mnemonico);
 
-        cout << "Mnemonico verificado: " << mnemonico << endl;
+        //cout << "Mnemonico verificado: " << mnemonico << endl;
 
         //verifica se o mnemonico é instrucao
         i_it = i_map.find(mnemonico);
@@ -426,7 +426,7 @@ int primeira_passagem(fstream &arq_fonte, std::map <string, pair< pair<int, int>
                 //se não for inteiro, erro
                 if (check_int(operando) == 0){
 
-                  cout << "Linha " << cont_linha << ": ERRO! O operando de SPACE deve ser um valor inteiro positivo!"<< endl;
+                  cout << "Linha " << cont_linha << ": Erro sintático! O operando de SPACE deve ser um valor inteiro positivo!"<< endl;
                   flag_erro = 1;
                 }
                 //se for inteiro, verificar se é > 0
@@ -436,7 +436,7 @@ int primeira_passagem(fstream &arq_fonte, std::map <string, pair< pair<int, int>
 
                   if(aux <= 0){
 
-                    cout << "Linha " << cont_linha << ": ERRO! O operando de SPACE deve ser um valor inteiro positivo!"<< endl;
+                    cout << "Linha " << cont_linha << ": Erro sintático! O operando de SPACE deve ser um valor inteiro positivo!"<< endl;
                     flag_erro = 1;
                   }
                   //se for > 0, reservar o espaço solicitado
@@ -470,20 +470,20 @@ int primeira_passagem(fstream &arq_fonte, std::map <string, pair< pair<int, int>
                 //se não for inteiro, erro
                 if (check_int(operando) == 0){
 
-                  cout << "Linha " << cont_linha << ": ERRO! O operando de CONST deve ser um valor inteiro!"<< endl;
+                  cout << "Linha " << cont_linha << ": Erro sintático! O operando de CONST deve ser um valor inteiro!"<< endl;
                   flag_erro = 1;
                 }
               }
               //se não há Operandos
               else {
 
-                cout << "Linha " << cont_linha << ": ERRO! CONST deve conter operando!"<< endl;
+                cout << "Linha " << cont_linha << ": Erro sintático! CONST deve conter operando!"<< endl;
                 flag_erro = 1;
               }
             }
             else if (mnemonico == "SECTION"){
 
-              cout << "Linha " << cont_linha << ": Erro! A diretiva SECTION não deve acompanhar símbolo!" << endl;
+              cout << "Linha " << cont_linha << ": Erro sintático! A diretiva SECTION não deve acompanhar símbolo!" << endl;
               flag_erro = 1;
             }
             else if(mnemonico == "EXTERN"){
@@ -495,7 +495,7 @@ int primeira_passagem(fstream &arq_fonte, std::map <string, pair< pair<int, int>
             }
             else if (mnemonico == "PUBLIC"){
 
-              cout << "Linha " << cont_linha << ": Erro! A diretiva PUBLIC não deve acompanhar símbolo!" << endl;
+              cout << "Linha " << cont_linha << ": Erro sintático! A diretiva PUBLIC não deve acompanhar símbolo!" << endl;
               flag_erro = 1;
             }
             else if (mnemonico == "BEGIN"){
@@ -523,7 +523,7 @@ int primeira_passagem(fstream &arq_fonte, std::map <string, pair< pair<int, int>
       //converte para maiúsculo
       str_upper(mnemonico);
 
-      cout << "Mnemonico verificado: " << mnemonico << endl;
+      //cout << "Mnemonico verificado: " << mnemonico << endl;
 
       //verifica se o mnemonico é instrucao
       i_it = i_map.find(mnemonico);
@@ -558,12 +558,12 @@ int primeira_passagem(fstream &arq_fonte, std::map <string, pair< pair<int, int>
 
           if (mnemonico == "SPACE"){
 
-            cout << "Linha " << cont_linha << ": Erro! A diretiva SPACE deve acompanhar um símbolo!" << endl;
+            cout << "Linha " << cont_linha << ": Erro sintático! A diretiva SPACE deve acompanhar um símbolo!" << endl;
             flag_erro = 1;
           }
           else if (mnemonico == "CONST"){
 
-            cout << "Linha " << cont_linha << ": Erro! A diretiva CONST deve acompanhar um símbolo!" << endl;
+            cout << "Linha " << cont_linha << ": Erro sintático! A diretiva CONST deve acompanhar um símbolo!" << endl;
             flag_erro = 1;
           }
           else if (mnemonico == "SECTION"){
@@ -587,7 +587,7 @@ int primeira_passagem(fstream &arq_fonte, std::map <string, pair< pair<int, int>
             //se o operando for diferente dos 3 acima, erro
             else{
 
-              cout << "Linha " << cont_linha << ": Erro! SECTION inválida!" << endl;
+              cout << "Linha " << cont_linha << ": Erro sintático! SECTION inválida!" << endl;
               flag_erro = 1;
             }
 
@@ -595,20 +595,20 @@ int primeira_passagem(fstream &arq_fonte, std::map <string, pair< pair<int, int>
           }
           else if (mnemonico == "EXTERN"){
 
-            cout << "Linha " << cont_linha << ": Erro! A diretiva EXTERN deve acompanhar um símbolo!" << endl;
+            cout << "Linha " << cont_linha << ": Erro sintático! A diretiva EXTERN deve acompanhar um símbolo!" << endl;
             flag_erro = 1;
           }
           else if (mnemonico == "PUBLIC"){
 
-            //se não há operando, ERRO
+            //se não há operando, Erro
             if(pos_linha > length_linha){
 
-              cout << "Linha " << cont_linha << ": Erro! Não há operando para a diretiva PUBLIC!" << endl;
+              cout << "Linha " << cont_linha << ": Erro sintático! Não há operando para a diretiva PUBLIC!" << endl;
               flag_erro = 1;
             }
             operando = get_next(linha, &pos_linha, length_linha);
             str_upper(operando);
-            cout << "Operando verificado: " << operando << endl;
+            //cout << "Operando verificado: " << operando << endl;
 
             td_map.insert(make_pair(operando, 0));
           }
@@ -642,7 +642,7 @@ int primeira_passagem(fstream &arq_fonte, std::map <string, pair< pair<int, int>
     //se não achou, erro
     if(s_it == s_map.end()){
 
-      cout << "ERRO! Simbolo da tabela de definição não consta na de símbolos" << endl;
+      cout << "Erro semântico! Simbolo da tabela de definição não consta na de símbolos" << endl;
       flag_erro = 1;
     }
     else{
@@ -654,19 +654,19 @@ int primeira_passagem(fstream &arq_fonte, std::map <string, pair< pair<int, int>
   //se flag_begin e flag_end são diferentes, algum deles deixou de ser declarado
   if(flag_begin == 1 && flag_end == 0){
 
-    cout << "Erro! Esperava-se directiva END!" << endl;
+    cout << "Erro semântico! Esperava-se directiva END!" << endl;
     flag_erro = 1;
   }
   else if(flag_begin == 0 && flag_end == 1){
 
-    cout << "Erro! Esperava-se directiva BEGIN!" << endl;
+    cout << "Erro semântico! Esperava-se directiva BEGIN!" << endl;
     flag_erro = 1;
   }
-  cout << "Flag erro: " << flag_erro << endl;
-  cout << "Flag begin: " << flag_begin << endl;
-  cout << "End flag: " << flag_end << endl;
+  //cout << "Flag erro: " << flag_erro << endl;
+  //cout << "Flag begin: " << flag_begin << endl;
+  //cout << "End flag: " << flag_end << endl;
 
-  //DEFINIÇÃO DO RETORNO DA FUNÇÃO: -1 == ERRO, 0 == CÓDIGO SIMPLES, 1 == MÓDULO
+  //DEFINIÇÃO DO RETORNO DA FUNÇÃO: -1 == Erro, 0 == CÓDIGO SIMPLES, 1 == MÓDULO
   //se há erro
   if(flag_erro == 1){
 
@@ -717,7 +717,7 @@ int segunda_passagem(fstream &arq_fonte, std::map <string, pair< pair<int, int>,
 
     if(length_linha == 0) continue;
 
-    cout << "Linha lida: " << linha << endl;
+    //cout << "Linha lida: " << linha << endl;
 
     //varre a linha procurando ':'
     for(i=0; i<length_linha; i++){
@@ -786,7 +786,7 @@ int segunda_passagem(fstream &arq_fonte, std::map <string, pair< pair<int, int>,
       //se também não for instrução, a operação é inválida
       if(i_it == i_map.end()){
 
-        cout << "Linha " << cont_linha << ": Erro! Operação inválida!" << endl;
+        cout << "Linha " << cont_linha << ": Erro sintático! Operação inválida!" << endl;
         flag_erro = 1;
       }
       //caso seja instrução, tratar de acordo com o número de operandos
@@ -798,7 +798,7 @@ int segunda_passagem(fstream &arq_fonte, std::map <string, pair< pair<int, int>,
           //se não houver operandos, erro
           if (pos_linha > length_linha){
 
-            cout << "Linha " << cont_linha << ": Erro! A instrução COPY deve receber dois operandos!" << endl;
+            cout << "Linha " << cont_linha << ": Erro sintático! A instrução COPY deve receber dois operandos!" << endl;
             flag_erro = 1;
             continue;
           }
@@ -808,15 +808,15 @@ int segunda_passagem(fstream &arq_fonte, std::map <string, pair< pair<int, int>,
           //se não houver o segundo operando, erro
           if (pos_linha > length_linha){
 
-            cout << "Linha " << cont_linha << ": Erro! A instrução COPY deve receber dois operandos!" << endl;
+            cout << "Linha " << cont_linha << ": Erro sintático! A instrução COPY deve receber dois operandos!" << endl;
             flag_erro = 1;
             continue;
           }
 
-          //se não há vírgula após o primeiro operando, ERRO
+          //se não há vírgula após o primeiro operando, Erro
           if (*(operando.end() - 1) != ','){
 
-            cout << "Linha " << cont_linha << ": Erro! Operandos separados incorretamente!" << endl;
+            cout << "Linha " << cont_linha << ": Erro sintático! Operandos separados incorretamente!" << endl;
             flag_erro = 1;
             continue;
           }
@@ -829,7 +829,7 @@ int segunda_passagem(fstream &arq_fonte, std::map <string, pair< pair<int, int>,
           //se ainda houver operando, erro
           if (pos_linha < length_linha){
 
-            cout << "Linha " << cont_linha << ": Erro! A instrução COPY deve receber dois operandos!" << endl;
+            cout << "Linha " << cont_linha << ": Erro sintático! A instrução COPY deve receber dois operandos!" << endl;
             flag_erro = 1;
             continue;
           }
@@ -838,7 +838,7 @@ int segunda_passagem(fstream &arq_fonte, std::map <string, pair< pair<int, int>,
           s_it = s_map.find(aux);
           if (s_it == s_map.end()){
 
-            cout << "Linha " << cont_linha << ": Erro! Operando 1 não é um símbolo definido!" << endl;
+            cout << "Linha " << cont_linha << ": Erro semântico! Operando 1 não é um símbolo definido!" << endl;
             flag_erro = 1;
             continue;
           }
@@ -850,7 +850,7 @@ int segunda_passagem(fstream &arq_fonte, std::map <string, pair< pair<int, int>,
           s_it = s_map.find(operando);
           if (s_it == s_map.end()){
 
-            cout << "Linha " << cont_linha << ": Erro! Operando 2 não é um símbolo definido!" << endl;
+            cout << "Linha " << cont_linha << ": Erro semântico! Operando 2 não é um símbolo definido!" << endl;
             flag_erro = 1;
             continue;
           }
@@ -864,7 +864,7 @@ int segunda_passagem(fstream &arq_fonte, std::map <string, pair< pair<int, int>,
           //se get next retornou valor < length_linha, ainda há o que ser lido, ou seja, operandos
           if (pos_linha < length_linha){
 
-            cout << "Linha " << cont_linha << ": Erro! A instrução STOP não deve receber operandos!";
+            cout << "Linha " << cont_linha << ": Erro sintático! A instrução STOP não deve receber operandos!";
             flag_erro = 1;
           }
 
@@ -877,7 +877,7 @@ int segunda_passagem(fstream &arq_fonte, std::map <string, pair< pair<int, int>,
           //se get next retornou valor < length_linha, ainda há o que ser lido, ou seja, operandos
           if (pos_linha < length_linha){
 
-            cout << "Linha " << cont_linha << ": Erro! A instrução " << mnemonico << " deve receber apenas um operando!" << endl;
+            cout << "Linha " << cont_linha << ": Erro sintático! A instrução " << mnemonico << " deve receber apenas um operando!" << endl;
             flag_erro = 1;
             continue;
           }
@@ -885,7 +885,7 @@ int segunda_passagem(fstream &arq_fonte, std::map <string, pair< pair<int, int>,
           s_it = s_map.find(operando);
           if (s_it == s_map.end()){
 
-            cout << "Linha " << cont_linha << ": Erro! Operando não é um símbolo definido!" << endl;
+            cout << "Linha " << cont_linha << ": Erro semântico! Operando não é um símbolo definido!" << endl;
             flag_erro = 1;
           }
           else{
@@ -978,7 +978,7 @@ int main(int argc, char const *argv[]) {
   }
 
   flag_primeira = primeira_passagem(arq_pre_processado, i_map, s_map, d_map, td_map);
-  cout << "Flag da primeira: " << flag_primeira << endl;
+  //cout << "Flag da primeira: " << flag_primeira << endl;
   arq_pre_processado.close();
 
   if(flag_primeira == -1){
@@ -996,7 +996,7 @@ int main(int argc, char const *argv[]) {
   }
 
   flag_segunda = segunda_passagem(arq_pre_processado, i_map, s_map, d_map, td_map, tu_map, cod_list, rel_list);
-  cout << "Flag da segunda: " << flag_segunda << endl;
+  //cout << "Flag da segunda: " << flag_segunda << endl;
   arq_pre_processado.close();
 
   //INSERÇÂO DOS DADOS NO ARQUIVO OBJETO
