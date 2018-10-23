@@ -9,6 +9,7 @@
 
 using namespace std;
 
+//Função que cria o mapa onde são salvas informações das instruções
 void cria_map_instrucoes(std::map <string, pair< pair<int, int>, pair<int, int> > > &i_map){
 
   i_map.insert(make_pair("ADD", make_pair(make_pair(1, 2), make_pair(1, 0))));
@@ -26,7 +27,7 @@ void cria_map_instrucoes(std::map <string, pair< pair<int, int>, pair<int, int> 
   i_map.insert(make_pair("OUTPUT", make_pair(make_pair(13, 2), make_pair(1, 0))));
   i_map.insert(make_pair("STOP", make_pair(make_pair(14, 1), make_pair(0, 0))));
 }
-
+//Função que cria o mapa onde são salvas informações das diretivas
 void cria_map_diretivas(std::map<string, pair<int, int> > &d_map){
 
   d_map.insert(make_pair("SECTION", make_pair(0, 1)));
@@ -52,7 +53,7 @@ void str_upper(string &str){
   }
 }
 
-//verifica o próximo token a partir de pos_linha, e após fazê-lo, atualiza o valor dessa variável para o início da próxima leitura (> length em caso de último token)
+//verifica o próximo conjunto de CHAR até o ' ' ou fim de linha
 string get_next(string &linha, int *pos_linha, int length_linha){
 
   string token;
@@ -66,6 +67,7 @@ string get_next(string &linha, int *pos_linha, int length_linha){
   return token;
 }
 
+//Função que verifica se o conteudo da string passada corresponde a um numeral (inteiro)
 int check_int(string &operando){
 
   int i = 5;
@@ -82,6 +84,7 @@ int check_int(string &operando){
   }
 }
 
+//Função que escreve no arquivo objeto quando o código fonte contém módulos
 void output(ofstream &arq_obj, std::map<string, int> td_map, std::multimap<string, int> tu_map, std::list<int> cod_list, std::list<int> rel_list){
 
   //iteradores
@@ -119,7 +122,7 @@ void output(ofstream &arq_obj, std::map<string, int> td_map, std::multimap<strin
   }
 
 }
-
+//Função que escreve no arquivo objeto quando o código fonte não tem módulos
 void output_nom(ofstream &arq_obj, std::map<string, int> td_map, std::multimap<string, int> tu_map, std::list<int> cod_list, std::list<int> rel_list){
 
   //iteradores
@@ -322,8 +325,13 @@ int pre_processamento(ifstream &arq_fonte ,fstream &arq_pre_processado){
   }
   return 1;
 }
+
 int primeira_passagem(fstream &arq_fonte, std::map <string, pair< pair<int, int>, pair<int, int> > > &i_map, std::map<string, pair <int, int > > &s_map, std::map<string, pair<int, int> > &d_map, std::map<string, int> &td_map){
 
+  //Atualiza os maps que contém tabela de definições e símbolos; verifica o correto
+  //uso de todas as diretivas
+  //Entradas: arquivo pré processado e os mapas, passados por referência
+  //Saídas: mapas atualizados de acordo com a leitura e flag indicativa de erro durante a montagem
   string linha;
   string mnemonico;
   string simbolo;
@@ -343,14 +351,11 @@ int primeira_passagem(fstream &arq_fonte, std::map <string, pair< pair<int, int>
 
   while(getline(arq_fonte, linha)){
 
-    //cout << "Linha lida: " << linha << endl;
-
     length_linha = linha.length();
-    //cout << "Tamanho: " << length_linha << endl;
-    label_detect = 0;
+    label_detect = 0; //flag que marca detecção de ':'
     cont_linha++;
 
-    if(length_linha == 0 || linha[0] == ';') continue;
+    if(length_linha == 0 || linha[0] == ';') continue;  //caso a linha esteja em branco, prosseguir
 
     //varre a linha procurando ':'
     for(i=0; i<length_linha; i++){
@@ -374,7 +379,7 @@ int primeira_passagem(fstream &arq_fonte, std::map <string, pair< pair<int, int>
       //converte para maiusculo
       str_upper(simbolo);
 
-      //procura no map
+      //procura no map de símbolos
       s_it = s_map.find(simbolo);
 
       //se já existe = erro
@@ -387,16 +392,15 @@ int primeira_passagem(fstream &arq_fonte, std::map <string, pair< pair<int, int>
       else{
 
         s_map.insert(make_pair(simbolo, make_pair(cont_pos, 0)));
-        //cout << "Endereço " << cont_pos << ": detecção do símbolo " << simbolo << endl;
 
-        //se há apenas o rótulo na linha
+        //se há apenas o rótulo na linha, prossegue
         if(label_detect == length_linha -1){
 
           simbolo.clear();
           continue;
         }
 
-        pos_linha = label_detect + 2;
+        pos_linha = label_detect + 2; //ignora o espaço posterior ao rótulo e marca o início do próximo conjunto de CHAR
 
         //busca próximo termo na linha
         mnemonico = get_next(linha, &pos_linha, length_linha);
@@ -404,12 +408,10 @@ int primeira_passagem(fstream &arq_fonte, std::map <string, pair< pair<int, int>
         //converte para maiúsculo
         str_upper(mnemonico);
 
-        //cout << "Mnemonico verificado: " << mnemonico << endl;
-
         //verifica se o mnemonico é instrucao
         i_it = i_map.find(mnemonico);
 
-        //se for, aumenta o contador de posição de acordo com o tamanho da instrução
+        //se for, deve-se aumentar o contador de posição de acordo com o tamanho dessa instrução
         if (i_it != i_map.end()){
 
           //verifica se a instrução é chamada numa section proibida (DATA/BSS)
@@ -433,7 +435,7 @@ int primeira_passagem(fstream &arq_fonte, std::map <string, pair< pair<int, int>
             cout << "Linha " << cont_linha << ": Comando inválido!" << endl;
             flag_erro = 1;
           }
-          //se for diretiva, incrementa o contador de posição de acordo com o tamanho dela
+          //se for diretiva, deve-se operá-la e incrementar o contador de posição de acordo com seu tamanho
           else{
 
             if (mnemonico == "SPACE"){
@@ -546,14 +548,12 @@ int primeira_passagem(fstream &arq_fonte, std::map <string, pair< pair<int, int>
     //se não há label, devemos identificar a primeira operação pelo ' '
     else{
 
-      pos_linha = 0;
+      pos_linha = 0;  //define início da leitura para início da linha
 
       mnemonico = get_next(linha, &pos_linha, length_linha);
 
       //converte para maiúsculo
       str_upper(mnemonico);
-
-      //cout << "Mnemonico verificado: " << mnemonico << endl;
 
       //verifica se o mnemonico é instrucao
       i_it = i_map.find(mnemonico);
@@ -575,7 +575,7 @@ int primeira_passagem(fstream &arq_fonte, std::map <string, pair< pair<int, int>
       //se não for instrução, vericica se é diretiva
       else{
 
-        d_it = d_map.find(mnemonico);
+        d_it = d_map.find(mnemonico); //procura no mapa de diretivas
         //se não for, erro
         if (d_it == d_map.end()){
 
@@ -620,8 +620,6 @@ int primeira_passagem(fstream &arq_fonte, std::map <string, pair< pair<int, int>
               cout << "Linha " << cont_linha << ": Erro léxico! SECTION inválida!" << endl;
               flag_erro = 1;
             }
-
-            cout << section_flag << endl;
           }
           else if (mnemonico == "EXTERN"){
 
@@ -636,9 +634,9 @@ int primeira_passagem(fstream &arq_fonte, std::map <string, pair< pair<int, int>
               cout << "Linha " << cont_linha << ": Erro sintático! Não há operando para a diretiva PUBLIC!" << endl;
               flag_erro = 1;
             }
+            //se há operando, ele deve ser inserido à tabela de definições
             operando = get_next(linha, &pos_linha, length_linha);
             str_upper(operando);
-            //cout << "Operando verificado: " << operando << endl;
 
             td_map.insert(make_pair(operando, 0));
           }
@@ -665,7 +663,6 @@ int primeira_passagem(fstream &arq_fonte, std::map <string, pair< pair<int, int>
   for(td_it = td_map.begin(); td_it != td_map.end(); td_it++){
 
     simbolo = td_it->first;
-    //cout << "Simbolo de td_map: " << simbolo << endl;
 
     //procura o símbolo da tabela de definição, na tabela de símbolos
     s_it = s_map.find(simbolo);
@@ -675,6 +672,7 @@ int primeira_passagem(fstream &arq_fonte, std::map <string, pair< pair<int, int>
       cout << "Erro semântico! Simbolo da tabela de definição não consta na de símbolos" << endl;
       flag_erro = 1;
     }
+    //copia o endereço do símbolo para a tabela de definições
     else{
 
       td_it->second = s_it->second.first;
@@ -692,9 +690,6 @@ int primeira_passagem(fstream &arq_fonte, std::map <string, pair< pair<int, int>
     cout << "Erro semântico! Esperava-se directiva BEGIN!" << endl;
     flag_erro = 1;
   }
-  //cout << "Flag erro: " << flag_erro << endl;
-  //cout << "Flag begin: " << flag_begin << endl;
-  //cout << "End flag: " << flag_end << endl;
 
   //DEFINIÇÃO DO RETORNO DA FUNÇÃO: -1 == Erro, 0 == CÓDIGO SIMPLES, 1 == MÓDULO
   //se há erro
@@ -718,6 +713,11 @@ int primeira_passagem(fstream &arq_fonte, std::map <string, pair< pair<int, int>
 
 int segunda_passagem(fstream &arq_fonte, std::map <string, pair< pair<int, int>, pair<int, int> > > &i_map, std::map<string, pair <int, int > > &s_map, std::map<string, pair<int, int> > &d_map, std::map<string, int> &td_map, std::multimap<string, int> &tu_map, std::list<int> &cod_list, std::list<int> &rel_list){
 
+  //Atualiza o map da tabela de uso, e as listas que guardam os valores RELATIVE e CODE;
+  //verifica o uso correto de todas as Instruções
+  //Entrada: arquivo pé processado, mapas e listas passados por referência
+  //Saída: mapas e listas atualizados e retorna uma flag indicativa de erro durante a montagem
+
   string linha;
   string mnemonico;
   string simbolo;
@@ -735,9 +735,6 @@ int segunda_passagem(fstream &arq_fonte, std::map <string, pair< pair<int, int>,
   std::map<string, int>::iterator td_it;
   std::multimap<string, int>::iterator tu_it;
 
-  cout << endl;
-  cout << "SEGUNDA PASSAGEM" << endl;
-
   while(getline(arq_fonte, linha)){
 
     length_linha = linha.length();
@@ -746,8 +743,6 @@ int segunda_passagem(fstream &arq_fonte, std::map <string, pair< pair<int, int>,
     pos_linha = 0;
 
     if(length_linha == 0) continue;
-
-    //cout << "Linha lida: " << linha << endl;
 
     //varre a linha procurando ':'
     for(i=0; i<length_linha; i++){
@@ -759,7 +754,7 @@ int segunda_passagem(fstream &arq_fonte, std::map <string, pair< pair<int, int>,
       }
     }
 
-    //se há um label, nessa passagem ele deve ser ignorado
+    //se há um rótulo, nessa passagem ele deve ser ignorado
     if (label_detect != 0){
 
       simbolo = get_next(linha, &pos_linha, length_linha);
@@ -773,7 +768,6 @@ int segunda_passagem(fstream &arq_fonte, std::map <string, pair< pair<int, int>,
     }
 
     //verificar o mnemonico em questão
-    //as diretivas são todas trabalhadas na primeira passagem, então a segunda é voltada apenas às instruções
     mnemonico = get_next(linha, &pos_linha, length_linha);
 
     //busca a diretiva no mapa
@@ -781,15 +775,17 @@ int segunda_passagem(fstream &arq_fonte, std::map <string, pair< pair<int, int>,
     //se for diretiva, apenas CONST e SPACE contribuem para o .obj
     if (d_it != d_map.end()){
 
-      //se for CONST, apenas pega o operando (verificou-se anteriormente caso não exista/seja de tipo inválido)
+      //se for CONST, obtém operando (verificou-se anteriormente caso não exista/seja de tipo inválido)
       if (mnemonico == "CONST"){
 
         operando = get_next(linha, &pos_linha, length_linha);
 
+        //caso seja um hexadecimal, ele é onvertido e inserido na lista do código
         if (operando[0] == '0' && operando[1] == 'x'){
 
-          cod_list.push_back(strtol(operando));
+          cod_list.push_back(hex_to_int(operando));
         }
+        //caso seja um inteiro decimal, é inserido na lista do código
         else{
 
           cod_list.push_back(atoi(operando.c_str()));
@@ -802,7 +798,7 @@ int segunda_passagem(fstream &arq_fonte, std::map <string, pair< pair<int, int>,
 
           //pega o operando, cujo tipo já foi verificado
           operando = get_next(linha, &pos_linha, length_linha);
-          //insere na lista e atualiza o contador
+          //insere o número solicitado de '0' na lista de código e atualiza o contador
           for (int i = 0; i<atoi(operando.c_str()); i++){
 
             cod_list.push_back(0);
@@ -810,6 +806,7 @@ int segunda_passagem(fstream &arq_fonte, std::map <string, pair< pair<int, int>,
           cont_pos += atoi(operando.c_str());
           continue;
         }
+        //se não há operando, insere '0' na lista de código e atualiza o contador
         else {
 
           cod_list.push_back(0);
@@ -858,7 +855,7 @@ int segunda_passagem(fstream &arq_fonte, std::map <string, pair< pair<int, int>,
             flag_erro = 1;
             continue;
           }
-          //salva o primeiro operando em buffer auxiliar
+          //apaga a ',' e salva o primeiro operando em buffer auxiliar
           operando.erase(operando.end()-1);
           string aux = operando;
           //get segundo operando
@@ -880,10 +877,16 @@ int segunda_passagem(fstream &arq_fonte, std::map <string, pair< pair<int, int>,
             flag_erro = 1;
             continue;
           }
-          //inserção de opcode e endereço do operando na lista de construção do código, e endereço na de relativos
+          //inserção de opcode e endereço do operando 1 na lista de construção do código, e endereço na de relativos
           cod_list.push_back(i_it->second.first.first);
           cod_list.push_back(s_it->second.first);
           rel_list.push_back((cont_pos + 1));
+
+          //se for extern, adiciona à tabela de uso
+          if(s_it->second.second == 1){
+
+            tu_map.insert(make_pair(aux, (cont_pos + 1)));
+          }
 
           s_it = s_map.find(operando);
           if (s_it == s_map.end()){
@@ -892,9 +895,15 @@ int segunda_passagem(fstream &arq_fonte, std::map <string, pair< pair<int, int>,
             flag_erro = 1;
             continue;
           }
-          //inserção do endereço do operando na lista de construção do código e endereço na de relativos
+          //inserção do endereço do operando 2 na lista de construção do código e endereço na de relativos
           cod_list.push_back(s_it->second.first);
           rel_list.push_back((cont_pos + 2));
+
+          //se for extern, adiciona à tabela de uso
+          if(s_it->second.second == 1){
+
+            tu_map.insert(make_pair(operando, (cont_pos + 2)));
+          }
         }
         //sem operando
         else if (mnemonico == "STOP"){
@@ -921,11 +930,13 @@ int segunda_passagem(fstream &arq_fonte, std::map <string, pair< pair<int, int>,
           }
           //verifica se o operando é um símbolo definido
           s_it = s_map.find(operando);
+          //se não for, erro
           if (s_it == s_map.end()){
 
             cout << "Linha " << cont_linha << ": Erro semântico! Operando não é um símbolo definido!" << endl;
             flag_erro = 1;
           }
+          //se for, inserir nas listas
           else{
 
             //inserção de opcode e endereço do operando na lista de construção do código
@@ -934,6 +945,7 @@ int segunda_passagem(fstream &arq_fonte, std::map <string, pair< pair<int, int>,
             //inserção do endereço na lista de relativos
             rel_list.push_back((cont_pos +1));
 
+            //se for extern, adiciona à tabela de uso
             if(s_it->second.second == 1){
 
               tu_map.insert(make_pair(operando, (cont_pos + 1)));
@@ -980,9 +992,11 @@ int main(int argc, char const *argv[]) {
   //lista para armazenar os endereços que são relativos
   std::list<int> rel_list;
 
+  //Cria os maps de instrução e diretivas
   cria_map_instrucoes(i_map);
   cria_map_diretivas(d_map);
 
+  //Abre os arquivos .asm e .pre e verifica a abertura
   concatenador += argv[1];
   concatenador += ".asm";
   arq_fonte.open(&concatenador[0]);
@@ -997,7 +1011,6 @@ int main(int argc, char const *argv[]) {
     cout << "Impossível abrir arquivo solicitado!";
     return -1;
   }
-
 
   // Passagem de pre processamento
   if(pre_processamento(arq_fonte, arq_pre_processado) == 0){
@@ -1019,6 +1032,7 @@ int main(int argc, char const *argv[]) {
   //cout << "Flag da primeira: " << flag_primeira << endl;
   arq_pre_processado.close();
 
+  //Caso tenha sido verificado erro na primeira passagem, finaliza
   if(flag_primeira == -1){
 
     cout << "Erro verificado durante a montagem! Operação abortada." << endl;
@@ -1037,13 +1051,13 @@ int main(int argc, char const *argv[]) {
   //cout << "Flag da segunda: " << flag_segunda << endl;
   arq_pre_processado.close();
 
-  //INSERÇÂO DOS DADOS NO ARQUIVO OBJETO
-  //se há erro
+  //Caso tenha sido verificado erro na segunda passagem, finaliza
   if(flag_segunda == 1){
 
     cout << "Erro verificado durante a montagem! Operação abortada." << endl;
     return 0;
   }
+  //INSERÇÂO DOS DADOS NO ARQUIVO OBJETO
   else{
 
     concatenador.clear();
@@ -1065,7 +1079,7 @@ int main(int argc, char const *argv[]) {
   arq_obj.close();
 
 
-  //TESTE DO CONTEÚDO DE S_MAP
+  /*//TESTE DO CONTEÚDO DE S_MAP
   cout << endl << "Conteúdo do s_map:" << endl;
   for (std::map<string, pair <int, int > >::iterator it = s_map.begin(); it != s_map.end(); it++){
 
@@ -1084,7 +1098,7 @@ int main(int argc, char const *argv[]) {
   for (std::multimap<string, int>::iterator it = tu_map.begin(); it != tu_map.end(); it++){
 
     cout << it->first << ' ' << it->second <<  endl;
-  }
+  }*/
 
   return 0;
 }
