@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <sstream>
 #include <list>
+#include <cmath>
 
 using namespace std;
 
@@ -132,6 +133,35 @@ void output_nom(ofstream &arq_obj, std::map<string, int> td_map, std::multimap<s
     arq_obj << *l_it << ' ';
   }
 
+}
+
+//FUNÇÃO PARA CONVERTER HEX EM INT
+int hex_to_int(string &operando){
+
+  int aux;
+  int length = operando.length();
+  int acc = 0;
+  //cout << length << endl;
+
+  for (int i = 0; i < length; i++){
+
+    if(operando[i] == '0' || operando[i] == '1' || operando[i] == '2' || operando[i] == '3' || operando[i] == '4' || operando[i] == '5' || operando[i] == '6' || operando[i] == '7' || operando[i] == '8' || operando[i] == '9'){
+
+      aux = int(operando[i]) - 48;
+      //cout << aux << endl;
+      acc += aux*pow(16,(length -1 - i));
+      //cout << acc << endl;
+    }
+    else if(operando[i] == 'A' || operando[i] == 'B' || operando[i] == 'C' || operando[i] == 'D' || operando[i] == 'E' || operando[i] == 'F'){
+
+      aux = int(operando[i]) - 55;
+      //cout << aux << endl;
+      acc += aux*pow(16,(length -1 - i));
+      //cout << acc << endl;
+    }
+  }
+
+  return acc;
 }
 
 int pre_processamento(ifstream &arq_fonte ,fstream &arq_pre_processado){
@@ -468,7 +498,7 @@ int primeira_passagem(fstream &arq_fonte, std::map <string, pair< pair<int, int>
                 //verifica se o operando é um inteiro
                 operando = get_next(linha, &pos_linha, length_linha);
                 //se não for inteiro, erro
-                if (check_int(operando) == 0){
+                if (check_int(operando) == 0 && (operando[0] != '0' && operando[1] != 'x')){
 
                   cout << "Linha " << cont_linha << ": ERRO! O operando de CONST deve ser um valor inteiro!"<< endl;
                   flag_erro = 1;
@@ -755,7 +785,15 @@ int segunda_passagem(fstream &arq_fonte, std::map <string, pair< pair<int, int>,
       if (mnemonico == "CONST"){
 
         operando = get_next(linha, &pos_linha, length_linha);
-        cod_list.push_back(atoi(operando.c_str()));
+
+        if (operando[0] == '0' && operando[1] == 'x'){
+
+          cod_list.push_back(strtol(operando));
+        }
+        else{
+
+          cod_list.push_back(atoi(operando.c_str()));
+        }
       }
       else if (mnemonico == "SPACE"){
 
