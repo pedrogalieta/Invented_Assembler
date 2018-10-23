@@ -4,7 +4,8 @@ Programadores:
 				Pedro Saman D N Cesarino   15/0144890
 				Pedro Victor Galieta Tomaz 15/0144938
 
-O trabalho consistiu em implementar dois algoritmos distintos: montador e ligador.
+O trabalho consistiu em implementar dois algoritmos distintos: montador e ligador. Foi desenvolvido usando Ubuntu 16.04 LTS na linguagem
+c++.
 
 Montador:
 
