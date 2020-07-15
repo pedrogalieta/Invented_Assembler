@@ -1078,27 +1078,5 @@ int main(int argc, char const *argv[]) {
   }
   arq_obj.close();
 
-
-  /*//TESTE DO CONTEÚDO DE S_MAP
-  cout << endl << "Conteúdo do s_map:" << endl;
-  for (std::map<string, pair <int, int > >::iterator it = s_map.begin(); it != s_map.end(); it++){
-
-    cout << it->first << ' ' << it->second.first << ' ' << it->second.second <<  endl;
-  }
-
-  //TESTE DO CONTEÚDO DE TD_MAP
-  cout << endl << "Conteúdo do td_map:" << endl;
-  for (std::map<string, int>::iterator it = td_map.begin(); it != td_map.end(); it++){
-
-    cout << it->first << ' ' << it->second <<  endl;
-  }
-
-  //TESTE DO CONTEÚDO DE TU_MAP
-  cout << endl << "Conteúdo do tu_map:" << endl;
-  for (std::multimap<string, int>::iterator it = tu_map.begin(); it != tu_map.end(); it++){
-
-    cout << it->first << ' ' << it->second <<  endl;
-  }*/
-
   return 0;
 }

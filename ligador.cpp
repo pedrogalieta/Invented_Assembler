@@ -1,10 +1,9 @@
-// Programadores: Pedro Saman D N Cesarino   15/0144890
+// Programmers: Pedro Saman D N Cesarino   15/0144890
 //                Pedro Victor Galieta Tomaz 15/0144938
 // Professor: Bruno Luiggi Macchiavello Espinoza
 // Universidade de Brasília - Departamento de Ciência da Computação
-// Objetivo: Fazer um programa que é capaz de fazer a ligação (linking) de diferentes módulos de um mesmo código no formato
-//           objeto que foi montado por outro arquivo. O assembly que gera esse objeto é o assembly inventado utilizado na
-//           disciplina de Software Básico
+// Goal: Develop a code capable of linking different modules of a same object
+// code mounted in another file. This is an invented assembly used in class
 
 #include <sstream>
 #include <iostream>
